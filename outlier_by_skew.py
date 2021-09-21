@@ -46,6 +46,11 @@ kdeplot(df['Monthly Mean Total Sunspot Number'])
 iqr_d = iqr(df['Monthly Mean Total Sunspot Number'])
 
 low_bound = df['Monthly Mean Total Sunspot Number'].quantile(0.25) - 1.5*np.exp(-3*skew_np)*iqr_d
-up_bound = df['Monthly Mean Total Sunspot Number'].quantile(0.25) + 1.5*np.exp(4*skew_np)*iqr_d
+up_bound = df['Monthly Mean Total Sunspot Number'].quantile(0.75) + 1.5*np.exp(4*skew_np)*iqr_d
+
+df.loc[(df['Monthly Mean Total Sunspot Number'] < low_bound) | (df['Monthly Mean Total Sunspot Number'] > up_bound),].shape
+
+low_bound = df['Monthly Mean Total Sunspot Number'].quantile(0.25) - 1.5*iqr_d
+up_bound = df['Monthly Mean Total Sunspot Number'].quantile(0.75) + 1.5*iqr_d
 
 df.loc[(df['Monthly Mean Total Sunspot Number'] < low_bound) | (df['Monthly Mean Total Sunspot Number'] > up_bound),].shape
