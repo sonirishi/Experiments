@@ -50,5 +50,50 @@ frob_norm = norm(transform,'F')  ## more than mean norm of new matrix
 
 spectral_norm = norm(transform,'2')  ## same as first singular value
 
+### Kernel Matrix
 
+data = matrix(c(3,4,1,10,2,1,3,4,3,1,3,4,5,6,11),5,3)
 
+gram_manual = matrix(rep(0,25),5,5)
+
+for (i in 1:5){
+  for (j in 1:5){
+    gram_manual[i,j] = t(data[i,]) %*% data[j,]
+  }
+}
+
+print(gram_manual)
+
+print(data %*% t(data)) ### this is the gram matrix of kernel
+
+svd(gram_manual)$d  ### all singular values are > 0 so PD
+
+### poly kernel
+
+data = matrix(c(3,4,1,10,2,3,4,3,1,3),5,2)
+
+gram_manual = matrix(rep(0,25),5,5)
+
+for (i in 1:5){
+  for (j in 1:5){
+    gram_manual[i,j] = (1+t(data[i,]) %*% data[j,])^2
+  }
+}
+
+data_new = matrix(rep(0,5*6),5,6)
+
+### Generate data in higher dimensions manually
+## and then XXt to calculate the gram matrix
+
+for (i in 1:5){
+  data_new[i,1] = 1
+  data_new[i,2] = data[i,1]^2
+  data_new[i,3] = sqrt(2)*data[i,1]*data[i,2]
+  data_new[i,4] = data[i,2]^2
+  data_new[i,5] = sqrt(2)*data[i,1]
+  data_new[i,6] = sqrt(2)*data[i,2]
+}
+
+gram_final = data_new %*% t(data_new)
+
+norm(gram_manual-gram_final,'F')
