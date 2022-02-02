@@ -32,6 +32,8 @@ res = mod.fit()
 beta = res.params[1]
 beta_1 = res.params[0]
 
+## P value calculation is wrong. We need to use t distribution
+# with n-p degress of freedom for this.
 def getSingleBootstrapMetrics(X,y,B,betahat,feat_no):
     param_list = []
     for i in range(B):
