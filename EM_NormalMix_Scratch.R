@@ -13,22 +13,25 @@ loglik <- function(i,p,mu,sd,data){
 
 expectation <- function(data,p,mu,sd){
   loglik.val <- sapply(1:length(p),loglik,p=p,mu=mu,sd=sd,data=data)
-  loglik.fin <- log(apply(loglik.val,2,sum))
-  return(loglik.fin/sum(loglik.fin))
+  ## no need of log likelihood, simple ratio is required
+  loglik.comp <- loglik.val/apply(loglik.val,1,sum)
+  return(apply(loglik.comp,2,mean))
 }
 
 fitparam <- function(param,data,lambdaval){
-  lik <- 0
+  lik <- matrix(rep(0,length(data)*length(lambdaval)),length(data),length(lambdaval))
   for(i in 1:length(lambdaval)){
-    lik <- lik + lambdaval[i]*dnorm(data,
-                              mean = param[i],sd = param[i+length(lambdaval)])
+    lik[,i] <- lambdaval[i]*dnorm(data,
+                                  mean = param[i],sd = param[i+length(lambdaval)])
   }
-  lik <- -sum(log(lik))
+  lik <- -sum(log(apply(lik, 1, sum)))
+  #print(lik)
   return(lik)
 }
 
 maximization <- function(data,lambda,mu,sd){
-  model <- optim(c(mu,sd),fn = fitparam, data=df, lambdaval=lambda)
+  model <- optim(c(mu,sd),fn = fitparam, data=df, lambdaval=lambda,
+                 method='CG')
   return(model)
 }
 
@@ -46,7 +49,7 @@ EMnorm <- function(data,clus,epsilon,p,mu,sd){
     model <- maximization(data,p,mu,sd)
     loglik <- -model$value
     #print(loglik)
-    #print(model$par)
+    print(model$par)
     mu <- model$par[1:clus]
     a = clus+1; b = 2*clus
     sd <- model$par[a:b]
@@ -56,13 +59,12 @@ EMnorm <- function(data,clus,epsilon,p,mu,sd){
   return(list(p,mu,sd,iter,loglik))
 }
 
-mix.model <- normalmixEM(df,k=2,epsilon = 0.000001)
-clus=2
+mix.model <- normalmixEM(df,k=3,epsilon = 0.000001)
+clus=3
 p = runif(clus)
 p <- p/sum(p)
-mu <- c(rnorm(1,mean(df),sd(df)),rnorm(1,mean(df),sd(df)),
-        rnorm(1,mean(df),sd(df)))
-sd <- runif(clus,min = sd(df)/20,max = 2*sd(df))
+mu <- runif(clus,min = mean(df)/10,max = 2*mean(df))
+sd <- runif(clus,min = sd(df)/10,max = 2*sd(df))
 
 #output <- EMnorm(df,2,0.001,mix.model$lambda,mix.model$mu,mix.model$sigma)
 output <- EMnorm(df,clus,0.000001,p,mu,sd)
